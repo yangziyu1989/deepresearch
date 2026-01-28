@@ -47,9 +47,11 @@ htmlcov/
 data/sessions/*
 data/results/*
 data/outputs/*
+data/vision/*
 !data/sessions/.gitkeep
 !data/results/.gitkeep
 !data/outputs/.gitkeep
+!data/vision/.gitkeep
 
 # Environment variables
 .env

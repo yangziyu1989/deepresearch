@@ -236,6 +236,105 @@ def show(
 
 
 @app.command()
+def vision(
+    topic: str = typer.Argument(..., help="Vision research topic"),
+    datasets: str = typer.Option(
+        "mnist,cifar10",
+        "--datasets",
+        "-d",
+        help="Comma-separated datasets (mnist, cifar10, cifar100)",
+    ),
+    num_samples: int = typer.Option(
+        100,
+        "--samples",
+        "-n",
+        help="Number of samples per experiment",
+    ),
+    output_dir: Path = typer.Option(
+        Path("data/outputs"),
+        "--output",
+        "-o",
+        help="Output directory",
+    ),
+    budget: float = typer.Option(
+        20.0,
+        "--budget",
+        "-b",
+        help="Maximum budget in USD",
+    ),
+    resume: Optional[str] = typer.Option(
+        None,
+        "--resume",
+        "-r",
+        help="Resume from session ID",
+    ),
+):
+    """Run vision research pipeline (MNIST, CIFAR-10)."""
+    from deepresearch.pipeline.vision_pipeline import VisionResearchPipeline
+
+    console.print(Panel(
+        f"[bold blue]Vision Research[/bold blue]\n{topic}\nDatasets: {datasets}",
+        expand=False
+    ))
+
+    dataset_list = [d.strip() for d in datasets.split(",")]
+
+    config = PipelineConfig(
+        research_topic=topic,
+        output_dir=output_dir,
+        session_dir=Path("data/sessions"),
+        results_dir=Path("data/results"),
+    )
+    config.api.total_budget_usd = budget
+
+    pipeline = VisionResearchPipeline(config, datasets=dataset_list)
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Starting vision pipeline...", total=None)
+        callback = create_progress_callback(progress, task)
+
+        result = asyncio.run(
+            pipeline.run(
+                research_topic=topic if not resume else None,
+                session_id=resume,
+                progress_callback=callback,
+            )
+        )
+
+    console.print()
+    if result.success:
+        console.print("[green]Vision pipeline completed![/green]")
+        console.print(f"Session: {result.session_id}")
+        console.print(f"Total cost: ${result.total_cost_usd:.4f}")
+
+        if result.metrics_summary:
+            table = Table(title="Experiment Results")
+            table.add_column("Experiment")
+            table.add_column("Accuracy")
+            table.add_column("Status")
+
+            for exp_id, metrics in result.metrics_summary.items():
+                acc = metrics.get("accuracy", 0)
+                status = metrics.get("status", "unknown")
+                color = "green" if status == "completed" else "red"
+                table.add_row(
+                    exp_id,
+                    f"{acc:.2%}",
+                    f"[{color}]{status}[/{color}]",
+                )
+            console.print(table)
+
+        if result.paper_path:
+            console.print(f"Paper: {result.paper_path}")
+    else:
+        console.print(f"[red]Pipeline failed: {result.error}[/red]")
+
+
+@app.command()
 def search(
     query: str = typer.Argument(..., help="Search query"),
     max_results: int = typer.Option(20, "--max", "-m", help="Maximum results"),

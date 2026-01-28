@@ -49,7 +49,17 @@ sudo apt-get install texlive-full
 
 ## Usage
 
-### Run Full Pipeline
+### Run Vision Research (MNIST, CIFAR-10)
+
+```bash
+# Run vision experiments on MNIST and CIFAR-10
+deepresearch vision "zero-shot image classification with multimodal LLMs" --datasets mnist,cifar10 --samples 100
+
+# Run on specific dataset
+deepresearch vision "few-shot learning for image classification" --datasets cifar10 --budget 10
+```
+
+### Run NLP Pipeline
 
 ```bash
 deepresearch run "Improve chain-of-thought reasoning with self-consistency" --budget 50
@@ -137,11 +147,27 @@ deepresearch/
 
 ## Supported Datasets
 
+### Vision (NEW)
+- **MNIST**: Handwritten digit classification (10 classes)
+- **CIFAR-10**: Natural image classification (10 classes)
+- **CIFAR-100**: Fine-grained classification (100 classes)
+
+### NLP
 - **Math Reasoning**: GSM8K, MATH
 - **General Knowledge**: MMLU
 - **Commonsense**: HellaSwag, WinoGrande
 - **Code Generation**: HumanEval, MBPP
 - **Question Answering**: TriviaQA, Natural Questions
+
+## Vision Experiment Types
+
+| Type | Description |
+|------|-------------|
+| `zero_shot` | Direct classification with class names |
+| `zero_shot_detailed` | Classification with detailed instructions |
+| `few_shot_1` | 1-shot learning (1 example per class) |
+| `few_shot_5` | 5-shot learning (5 examples per class) |
+| `chain_of_thought` | Step-by-step reasoning before classification |
 
 ## Development
 
