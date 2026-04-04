@@ -1,0 +1,1 @@
+"""Session registry — implementation pending."""

@@ -1,0 +1,48 @@
+# DeepResearch (Sibyl Architecture) — Project Configuration
+# Config priority: project config.yaml > system config.yaml > defaults
+
+# ── Language ─────────────────────────────────────────────────────────
+language: en
+
+# ── RunPod Compute ──────────────────────────────────────────────────
+compute_backend: runpod
+# runpod_api_key: ""  # or set RUNPOD_API_KEY env var
+runpod_gpu_type: "NVIDIA A100 80GB PCIe"
+runpod_gpu_count: 1
+runpod_image: "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04"
+runpod_volume_id: ""
+runpod_disk_gb: 50
+runpod_max_pods: 4
+runpod_spot: true
+runpod_cloud_type: "COMMUNITY"
+
+# ── GPU Scheduling ──────────────────────────────────────────────────
+max_gpus: 4
+gpus_per_task: 1
+
+# ── Research Focus ──────────────────────────────────────────────────
+# 1=explore (pivot early), 3=balanced (default), 5=deep_focus (persist)
+research_focus: 3
+
+# ── Experiment Pipeline ─────────────────────────────────────────────
+idea_exp_cycles: 6
+idea_validation_rounds: 4
+max_iterations: 10
+experiment_timeout: 300
+pilot_samples: 100
+
+# ── Writing ─────────────────────────────────────────────────────────
+writing_mode: parallel  # "sequential" | "parallel" | "codex"
+writing_revision_rounds: 2
+
+# ── Features ────────────────────────────────────────────────────────
+evolution_enabled: true
+self_heal_enabled: true
+lark_enabled: false
+review_enabled: true
+
+# ── Model Routing ───────────────────────────────────────────────────
+model_tiers:
+  heavy: claude-opus-4-6
+  standard: claude-opus-4-6
+  light: claude-sonnet-4-6

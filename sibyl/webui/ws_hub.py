@@ -1,0 +1,1 @@
+"""WebSocket hub — implementation pending."""

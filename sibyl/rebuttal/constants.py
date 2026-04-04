@@ -1,0 +1,1 @@
+"""Rebuttal constants — implementation pending."""

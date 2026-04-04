@@ -1,0 +1,1 @@
+"""State watcher — implementation pending."""

@@ -1,0 +1,1 @@
+"""Rebuttal CLI — implementation pending."""
