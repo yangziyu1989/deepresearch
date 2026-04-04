@@ -1,0 +1,3 @@
+name: sibyl-section-critic
+model: claude-sonnet-4-6
+description: Per-section quality critique
