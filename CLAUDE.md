@@ -13,8 +13,8 @@ sibyl/                      # Main package
 ├── orchestrate.py          # Main orchestrator (FarsOrchestrator)
 ├── cli.py                  # Typer CLI
 ├── compute/                # Compute backends
-│   ├── base.py             # Abstract ComputeBackend
-│   └── runpod_backend.py   # RunPod API + SSH
+│   ├── base.py             # Abstract ComputeBackend (11 abstract methods)
+│   └── runpod_backend.py   # RunPod API + SSH (pod lifecycle, remote exec, file transfer)
 ├── orchestration/          # Pipeline orchestration
 │   ├── models.py           # Action, AgentTask dataclasses
 │   ├── constants.py        # PIPELINE_STAGES (18 stages)
@@ -109,3 +109,19 @@ Edit `config.example.yaml` and copy to `config.yaml`. Key settings:
 - `research_focus: 1-5` (explore <-> deep focus)
 - `writing_mode: parallel|sequential|codex`
 - `evolution_enabled`, `self_heal_enabled`
+
+## Development
+
+- Old Python-only pipeline preserved on `python` branch (pre-Sibyl architecture)
+- Reference architecture: github.com/Sibyl-Research-Team/AutoResearch-SibylSystem
+- Package is `sibyl/` (top-level, not under `src/`)
+- Tests: `pytest tests/ -v` — 280 tests, all run in <0.3s (no API calls)
+- Demo: `python -m sibyl.demo` — dry-run of full 18-stage pipeline
+- Plugin dev: `claude --plugin-dir ./plugin --dangerously-skip-permissions`
+- Agent defs: `.claude/agents/*.yml` (YAML with name, model, description)
+- Skill defs: `.claude/skills/*.md` (markdown with shebang to render_skill_prompt)
+- Compute is RunPod-only — full pod lifecycle via `RunPodBackend` (create, stop, wait_for_ready, run_remote, upload/download, terminate)
+- SSH key auto-detected from `~/.ssh/` (prefers ed25519 > rsa > ecdsa)
+- Two SSH modes: "full" (public IP, supports rsync/scp) and "basic" (proxied via ssh.runpod.io, tar fallback for file transfer)
+- State machine transitions tested extensively — check test_state_machine.py before modifying
+- Workspace is the communication hub — agents never talk directly, only via files

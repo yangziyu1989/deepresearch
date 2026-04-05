@@ -80,6 +80,21 @@ class ComputeBackend(ABC):
         """List all active pods."""
 
     @abstractmethod
+    def stop_pod(self, pod_id: str) -> None:
+        """Stop a pod (preserves volume, releases GPU)."""
+
+    @abstractmethod
+    def wait_for_ready(self, pod_id: str, timeout_sec: int = 300, poll_sec: int = 5) -> bool:
+        """Block until pod is running and SSH-ready. Returns True if ready."""
+
+    @abstractmethod
+    def run_remote(self, pod_id: str, command: str, timeout_sec: int = 600) -> dict:
+        """Execute a command on a pod via SSH.
+
+        Returns dict with keys: stdout, stderr, returncode.
+        """
+
+    @abstractmethod
     def upload_code(self, pod_id: str, local_path: str, remote_path: str) -> bool:
         """Upload code/data to pod. Returns True on success."""
 

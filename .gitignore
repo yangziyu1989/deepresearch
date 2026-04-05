@@ -63,3 +63,11 @@ Thumbs.db
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Runtime artifacts
+workspaces/
+*.pt
+*.pth
+AutoResearch-SibylSystem/
+.research/
+scripts/debug_*.py

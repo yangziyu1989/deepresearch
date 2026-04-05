@@ -18,7 +18,7 @@ The system uses 34 specialized agents (literature researcher, innovator, experim
 
 ### RunPod-Native Compute
 
-All experiments execute on RunPod GPU pods. The GPU scheduler handles task parallelization with topological dependency sorting, and the experiment recovery system detects crashes and resynchronizes state.
+All experiments execute on RunPod GPU pods. The `RunPodBackend` manages the full pod lifecycle -- create, wait for ready, upload code via rsync/SSH, execute experiments remotely, monitor progress, download results, and terminate. It supports both full SSH (public IP with SCP/rsync) and basic proxied SSH (`ssh.runpod.io`), with automatic SSH key detection from `~/.ssh/`. The GPU scheduler handles task parallelization with topological dependency sorting, and the experiment recovery system detects crashes and resynchronizes state.
 
 ## Pipeline Stages
 
@@ -205,7 +205,7 @@ python -m sibyl.demo
 ## Tech Stack
 
 - **Runtime**: Claude Code (agent execution)
-- **Compute**: RunPod (GPU pods via API + SSH)
+- **Compute**: RunPod (GPU pods via REST/GraphQL API + SSH, full lifecycle management)
 - **Language**: Python 3.11+
 - **Config**: PyYAML + Pydantic-style validation
 - **CLI**: Typer + Rich
