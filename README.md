@@ -81,16 +81,28 @@ sibyl init "Improving chain-of-thought reasoning with self-consistency"
 
 This creates a workspace directory under `workspaces/` with the topic, config, and initial state files.
 
-### 4. Run the Pipeline
+### 3b. Or Initialize via Claude Code
 
-Use the Claude Code plugin commands within a Claude Code session:
+Open Claude Code in the repo directory and use the built-in slash commands:
 
 ```
-/start           # Begin pipeline execution
-/continue        # Resume from current stage
-/status          # Check progress
-/pivot           # Force a pivot to a new idea
-/stop            # Gracefully stop
+/init "Improving chain-of-thought reasoning with self-consistency"
+```
+
+### 4. Run the Pipeline
+
+Use the slash commands directly in any Claude Code session (no plugin flag needed):
+
+```
+/init <topic>    # Initialize a new research workspace
+/start <path>    # Begin pipeline execution
+/continue <path> # Resume from current stage
+/status [path]   # Check progress
+/pivot <path>    # Force a pivot to a new idea
+/stop <path>     # Gracefully stop
+/resume <path>   # Resume after explicit stop
+/debug <path>    # Diagnose and fix errors
+/evolve          # Cross-project self-evolution
 ```
 
 Or use the CLI for monitoring:
@@ -123,23 +135,25 @@ All settings live in `config.yaml` (project-level) or `config.example.yaml` (tem
 | `model_tiers.standard` | `claude-opus-4-6` | Model for standard tasks |
 | `model_tiers.light` | `claude-sonnet-4-6` | Model for simple/fast tasks |
 
-## Plugin Commands
+## Slash Commands
 
-The Claude Code plugin provides 9 slash commands:
+9 slash commands are available as custom commands in `.claude/commands/` -- they work in any Claude Code session opened from this repo, no plugin flag needed:
 
 | Command | Description |
 |---------|-------------|
-| `/init` | Initialize a new research workspace |
-| `/start` | Begin pipeline execution from init stage |
-| `/continue` | Resume pipeline from current stage |
-| `/status` | Show pipeline status, stage, and errors |
-| `/resume` | Resume a stopped or crashed session |
-| `/pivot` | Force pivot to a new research direction |
+| `/init <topic>` | Initialize a new research workspace |
+| `/start <path>` | Begin pipeline execution from init stage |
+| `/continue <path>` | Resume pipeline from current stage |
+| `/status [path]` | Show pipeline status, stage, and errors |
+| `/resume <path>` | Resume a stopped or crashed session |
+| `/pivot <path>` | Force pivot to a new research direction |
 | `/evolve` | Trigger cross-project evolution pass |
-| `/debug` | Diagnose and fix pipeline errors |
-| `/stop` | Gracefully stop the pipeline |
+| `/debug <path>` | Diagnose and fix pipeline errors |
+| `/stop <path>` | Gracefully stop the pipeline |
 
-Three lifecycle hooks run automatically:
+The same commands are also available as plugin commands (prefix `deepresearch:`) when running with `claude --plugin-dir ./plugin`.
+
+Three lifecycle hooks run automatically via the plugin:
 - `on-session-start.sh` -- Load workspace context on session start
 - `on-bash-complete.sh` -- Post-process bash command results
 - `on-stop.sh` -- Clean up on session end
@@ -177,6 +191,7 @@ plugin/                     # Claude Code plugin
 ├── commands/               # 9 slash commands
 └── hooks/scripts/          # 3 lifecycle hooks
 .claude/
+├── commands/               # 9 slash commands (work in any Claude Code session)
 ├── agents/                 # 34 agent definitions (YAML)
 └── skills/                 # 34 skill definitions (Markdown)
 config.example.yaml         # Configuration template
