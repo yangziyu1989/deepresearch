@@ -14,11 +14,11 @@ Built on **Claude Code** as the agent runtime and **RunPod** for GPU compute.
 
 ### Multi-Agent Orchestration
 
-The system uses 34 specialized agents (literature researcher, innovator, experimenter, critic, etc.) coordinated by the `FarsOrchestrator`. Agents communicate exclusively through workspace files -- no shared memory, no message passing. The orchestrator generates deterministic `Action` objects that are rendered into execution scripts for Claude Code to run.
+The system uses 35 specialized agents (literature researcher, innovator, experimenter, critic, figure-critic, etc.) coordinated by the `FarsOrchestrator`. Agents communicate exclusively through workspace files -- no shared memory, no message passing. The orchestrator generates deterministic `Action` objects that are rendered into execution scripts for Claude Code to run.
 
 ### RunPod-Native Compute
 
-All experiments execute on RunPod GPU pods. The `RunPodBackend` manages the full pod lifecycle -- create, wait for ready, upload code via rsync/SSH, execute experiments remotely, monitor progress, download results, and terminate. It supports both full SSH (public IP with SCP/rsync) and basic proxied SSH (`ssh.runpod.io`), with automatic SSH key detection from `~/.ssh/`. The GPU scheduler handles task parallelization with topological dependency sorting, and the experiment recovery system detects crashes and resynchronizes state.
+All experiments execute on RunPod GPU pods. The `RunPodBackend` manages the full pod lifecycle -- create, wait for ready, upload code via rsync/SSH, execute experiments remotely, monitor progress, download results, and terminate. It supports both full SSH (public IP with SCP/rsync) and basic proxied SSH (`ssh.runpod.io`), with SSH key at `~/.ssh/id_ed25519`. Code and data are stored under `/workspace/` on the pod (persistent volume). The GPU scheduler handles task parallelization with topological dependency sorting, and the experiment recovery system detects crashes and resynchronizes state.
 
 ## Pipeline Stages
 
@@ -56,7 +56,7 @@ init --> literature_search --> idea_debate --> planning --> pilot_experiments
 ### 1. Install
 
 ```bash
-git clone https://github.com/your-username/deepresearch.git
+git clone https://github.com/dongzhuoyao/deepresearch.git
 cd deepresearch
 pip install -e ".[dev]"
 ```
@@ -111,6 +111,8 @@ Or use the CLI for monitoring:
 tao status ./workspaces/your_project
 tao experiment-status ./workspaces/your_project
 tao dashboard ./workspaces/your_project
+tao webui --port 3000                       # web dashboard UI
+tao serve --port 3000                       # API-only server
 ```
 
 ## Configuration Reference
@@ -192,7 +194,7 @@ plugin/                     # Claude Code plugin
 └── hooks/scripts/          # 3 lifecycle hooks
 .claude/
 ├── commands/               # 9 slash commands (work in any Claude Code session)
-├── agents/                 # 34 agent definitions (YAML)
+├── agents/                 # 35 agent definitions (YAML)
 └── skills/                 # 34 skill definitions (Markdown)
 config.example.yaml         # Configuration template
 pyproject.toml              # Package metadata and dependencies

@@ -40,14 +40,14 @@ tao/                        # Main package
 ├── evolution.py            # Cross-project self-improvement
 ├── runtime_assets.py       # .claude/ setup, CLAUDE.md generation
 ├── latex_pipeline.py       # Markdown -> LaTeX -> PDF
-├── prompts/                # 29 agent prompt templates
+├── prompts/                # 30 agent prompt templates
 ├── dashboard/server.py     # Flask dashboard
 ├── webui/                  # WebUI backend (Flask + WebSocket)
 └── rebuttal/               # Rebuttal pipeline (7-stage)
 plugin/                     # Claude Code plugin
 ├── commands/               # 9 skill commands
 └── hooks/scripts/          # 3 lifecycle hooks
-.claude/agents/             # 34 agent definitions (YAML)
+.claude/agents/             # 35 agent definitions (YAML)
 .claude/skills/             # 34 skill definitions (Markdown)
 ```
 
@@ -69,6 +69,8 @@ tao evolve . --show
 tao self-heal-scan .
 tao latex-compile .
 tao dashboard .
+tao webui --port 3000       # web dashboard UI
+tao serve --port 3000       # API-only server
 
 # Run demo
 python -m tao.demo
@@ -101,6 +103,12 @@ ANTHROPIC_API_KEY=...
 TAO_ROOT=...  # optional: override repo root detection
 ```
 
+## SSH / RunPod
+
+- Private key: `~/.ssh/id_ed25519`
+- Web dashboard default port: 3000 (range 3000-3002)
+- RunPod storage: code and data go to `/workspace/` (persists across pod restarts)
+
 ## Config
 
 Edit `config.example.yaml` and copy to `config.yaml`. Key settings:
@@ -121,7 +129,13 @@ Edit `config.example.yaml` and copy to `config.yaml`. Key settings:
 - Agent defs: `.claude/agents/*.yml` (YAML with name, model, description)
 - Skill defs: `.claude/skills/*.md` (markdown with shebang to render_skill_prompt)
 - Compute is RunPod-only — full pod lifecycle via `RunPodBackend` (create, stop, wait_for_ready, run_remote, upload/download, terminate)
-- SSH key auto-detected from `~/.ssh/` (prefers ed25519 > rsa > ecdsa)
+- CLI aliases: `tao` and `deepresearch` both work (same entry point)
 - Two SSH modes: "full" (public IP, supports rsync/scp) and "basic" (proxied via ssh.runpod.io, tar fallback for file transfer)
-- State machine transitions tested extensively — check test_state_machine.py before modifying
 - Workspace is the communication hub — agents never talk directly, only via files
+
+## Gotchas
+
+- **RunPod costs money** — terminate pods immediately when idle; prepare everything locally before spinning up a pod
+- **RunPod storage** — only `/workspace/` persists; files outside it are lost on pod restart
+- **Prefer GPU-light methods** — few-step fine-tune, LoRA, small models over heavy training runs
+- **State machine** — check test_state_machine.py before modifying transitions
