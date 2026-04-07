@@ -165,9 +165,16 @@ class RunPodBackend(ComputeBackend):
     def run_remote(self, pod_id: str, command: str, timeout_sec: int = 600) -> dict:
         """Execute a command on a pod via SSH.
 
+        For proxy SSH (basic mode), writes a temp script to the pod first
+        to avoid PTY issues with inline commands.
+
         Returns dict with keys: stdout, stderr, returncode.
         """
         ssh_info = self.get_pod_ssh_info(pod_id)
+
+        if ssh_info["mode"] == "basic":
+            return self._run_remote_via_script(ssh_info, command, timeout_sec)
+
         ssh_prefix = self._ssh_cmd_prefix(ssh_info)
         cmd = ssh_prefix + [self._ssh_target(ssh_info), command]
         try:
@@ -177,6 +184,41 @@ class RunPodBackend(ComputeBackend):
             return {
                 "stdout": result.stdout,
                 "stderr": result.stderr,
+                "returncode": result.returncode,
+            }
+        except subprocess.TimeoutExpired:
+            return {"stdout": "", "stderr": "Command timed out", "returncode": -1}
+        except Exception as e:
+            return {"stdout": "", "stderr": str(e), "returncode": -1}
+
+    def _run_remote_via_script(
+        self, ssh_info: dict, command: str, timeout_sec: int = 600
+    ) -> dict:
+        """Execute command on proxy SSH by writing a temp script, then running it.
+
+        Proxy SSH (ssh.runpod.io) forces PTY which breaks inline commands.
+        Workaround: write command to /tmp/tao_run.sh, execute it, clean up.
+        """
+        import base64
+
+        encoded = base64.b64encode(command.encode()).decode()
+        # Single compound command: decode script, run it, capture exit code
+        wrapper = (
+            f"echo {encoded} | base64 -d > /tmp/tao_run.sh && "
+            f"bash /tmp/tao_run.sh ; EXIT=$? ; rm -f /tmp/tao_run.sh ; exit $EXIT"
+        )
+        ssh_prefix = self._ssh_cmd_prefix(ssh_info)
+        cmd = ssh_prefix + ["-tt", self._ssh_target(ssh_info), wrapper]
+        try:
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=timeout_sec,
+            )
+            # Strip PTY artifacts (carriage returns) from output
+            stdout = result.stdout.replace("\r\n", "\n").replace("\r", "")
+            stderr = result.stderr.replace("\r\n", "\n").replace("\r", "")
+            return {
+                "stdout": stdout,
+                "stderr": stderr,
                 "returncode": result.returncode,
             }
         except subprocess.TimeoutExpired:

@@ -14,7 +14,7 @@ runpod_volume_id: ""
 runpod_disk_gb: 50
 runpod_max_pods: 4
 runpod_spot: true
-runpod_cloud_type: "COMMUNITY"
+runpod_cloud_type: "SECURE"
 
 # ── GPU Scheduling ──────────────────────────────────────────────────
 max_gpus: 4

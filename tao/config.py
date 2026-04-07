@@ -44,7 +44,7 @@ class Config:
     runpod_volume_id: str = ""
     runpod_disk_gb: int = 50
     runpod_volume_mount: str = "/workspace"
-    runpod_cloud_type: str = "COMMUNITY"
+    runpod_cloud_type: str = "SECURE"
     runpod_template_id: str = ""
     runpod_max_pods: int = 4
     runpod_spot: bool = True

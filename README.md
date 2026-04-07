@@ -125,7 +125,7 @@ All settings live in `config.yaml` (project-level) or `config.example.yaml` (tem
 | `runpod_gpu_type` | `NVIDIA A100 80GB PCIe` | GPU type for pods |
 | `runpod_max_pods` | `4` | Maximum concurrent pods |
 | `runpod_spot` | `true` | Use spot/preemptible instances |
-| `runpod_cloud_type` | `COMMUNITY` | RunPod cloud type |
+| `runpod_cloud_type` | `SECURE` | RunPod cloud type |
 | `research_focus` | `3` | 1=explore (pivot early), 5=deep focus (persist) |
 | `writing_mode` | `parallel` | `parallel`, `sequential`, or `codex` |
 | `idea_exp_cycles` | `6` | Max idea-experiment iterations |
