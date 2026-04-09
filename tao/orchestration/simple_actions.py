@@ -85,3 +85,12 @@ def build_quality_gate(config: "Config") -> Action:
         description="Quality gate — deterministic DONE/iterate decision",
         estimated_minutes=1,
     )
+
+
+def build_writing_teaser(config: "Config") -> Action:
+    return Action(
+        action_type="skill",
+        skills=[{"name": "tao-teaser-generator", "description": "Create Figure 1 (teaser) combining method + key result"}],
+        description="Generate teaser figure (Figure 1)",
+        estimated_minutes=10,
+    )

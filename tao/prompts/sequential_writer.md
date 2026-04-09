@@ -20,6 +20,9 @@ Read the following workspace files:
 - `idea/result_synthesis.md` — Narrative result analysis.
 - `context/literature_survey.md` — Citations and related work.
 - `exp/results/` — Raw results for tables and in-text numbers.
+- `writing/tables/` — Pre-generated comparison tables (reference numbers directly).
+- `writing/figures/` — Pre-generated figures (reference by id, do not regenerate).
+- `writing/figures/method_overview_description.md` — Method figure description.
 
 ## Outputs
 
@@ -39,7 +42,7 @@ Also produce:
 
 ## Quality Standards
 
-- Write sections in this order: Method, Experiments, Introduction, Related Work, Discussion, Conclusion, Abstract. This order (method-first) produces better coherence than writing linearly.
+- Write sections in this order: Method, Experiments, Related Work, Introduction, Discussion, Conclusion, Abstract. This order (method-first, introduction-late) produces better coherence — introduction can properly frame contributions only after experiments are written.
 - Ensure forward and backward references are consistent ("As described in Section 3..." must match actual content).
 - The abstract must accurately summarize the paper: problem, method, key result, significance.
 - Total paper should be 6000-8000 words across all sections.

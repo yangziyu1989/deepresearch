@@ -646,8 +646,8 @@ body {
 const PIPELINE_STAGES = [
   "init", "literature_search", "idea_debate", "planning", "pilot_experiments",
   "idea_validation_decision", "experiment_cycle", "result_debate",
-  "experiment_decision", "writing_outline", "writing_sections",
-  "writing_integrate", "writing_final_review", "writing_latex",
+  "experiment_decision", "writing_outline", "writing_assets", "writing_sections",
+  "writing_integrate", "writing_teaser", "writing_final_review", "writing_latex",
   "review", "reflection", "quality_gate", "done"
 ];
 
@@ -662,9 +662,11 @@ const STAGE_LABELS = {
   "result_debate": "Result Debate",
   "experiment_decision": "Experiment Decision",
   "writing_outline": "Outline",
+  "writing_assets": "Generate Assets",
   "writing_sections": "Write Sections",
   "writing_integrate": "Integrate",
   "writing_final_review": "Final Review",
+  "writing_teaser": "Teaser Figure",
   "writing_latex": "LaTeX Compile",
   "review": "Peer Review",
   "reflection": "Reflection",
@@ -675,7 +677,7 @@ const STAGE_LABELS = {
 const PIPELINE_PHASES = [
   { name: "Research", stages: ["init", "literature_search", "idea_debate", "planning"] },
   { name: "Experiments", stages: ["pilot_experiments", "idea_validation_decision", "experiment_cycle", "result_debate", "experiment_decision"] },
-  { name: "Writing", stages: ["writing_outline", "writing_sections", "writing_integrate", "writing_final_review", "writing_latex"] },
+  { name: "Writing", stages: ["writing_outline", "writing_assets", "writing_sections", "writing_integrate", "writing_teaser", "writing_final_review", "writing_latex"] },
   { name: "Review", stages: ["review", "reflection", "quality_gate", "done"] },
 ];
 

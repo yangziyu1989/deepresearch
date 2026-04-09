@@ -30,3 +30,16 @@ def build_writing_sections(config: "Config") -> Action:
         description="Write paper sections sequentially",
         estimated_minutes=30,
     )
+
+
+def build_writing_assets(config: "Config") -> Action:
+    # Always sequential: tables must complete before figures because
+    # exp_figure_generator reads writing/tables/table_summary.json.
+    # All writing_mode values (parallel, sequential, codex) use this path —
+    # codex mode only affects text writing, not asset generation.
+    return Action(
+        action_type="skill",
+        skills=[{"name": "tao-asset-generator", "description": "Generate tables, experimental figures, and method diagram"}],
+        description="Generate visual assets: tables → exp figures → method figure",
+        estimated_minutes=20,
+    )

@@ -16,7 +16,7 @@ def run_demo(output_dir: str | Path = "/tmp/tao_demo") -> dict:
 
     This validates:
     - Workspace creation and initialization
-    - State machine transitions through all 18 stages
+    - State machine transitions through all 20 stages
     - Action generation for each stage
     - Execution script rendering
     - Experiment progress tracking
@@ -47,9 +47,11 @@ def run_demo(output_dir: str | Path = "/tmp/tao_demo") -> dict:
         "experiment_cycle": ("Full experiments: 5/5 done, main acc=0.85", 0.0),
         "result_debate": ("Results are significant (p<0.01), novel contribution", 0.0),
         "experiment_decision": ("DECISION: PROCEED -- results support hypothesis", 0.0),
-        "writing_outline": ("Outline: 6 sections planned", 0.0),
+        "writing_outline": ("Outline: 6 sections planned, preflight checks passed", 0.0),
+        "writing_assets": ("Tables, exp figures, method figure generated", 0.0),
         "writing_sections": ("All 6 sections drafted in parallel", 0.0),
         "writing_integrate": ("Cross-critique done, sections integrated", 0.0),
+        "writing_teaser": ("Teaser Figure 1 created: method + key result", 0.0),
         "writing_final_review": ("Score: 7.5/10 -- ready for LaTeX", 7.5),
         "writing_latex": ("LaTeX compiled successfully", 0.0),
         "review": ("Supervisor: solid paper, minor revisions suggested", 0.0),

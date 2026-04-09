@@ -3,7 +3,7 @@ from tao.config import Config
 from tao.orchestration.simple_actions import (
     build_literature_search, build_planning, build_idea_validation,
     build_experiment_decision, build_writing_outline, build_writing_final_review,
-    build_writing_latex, build_reflection, build_quality_gate,
+    build_writing_latex, build_writing_teaser, build_reflection, build_quality_gate,
 )
 from tao.orchestration.team_actions import (
     build_idea_debate, build_result_debate, build_writing_integrate, build_review,
@@ -11,7 +11,7 @@ from tao.orchestration.team_actions import (
 from tao.orchestration.experiment_actions import (
     build_pilot_experiments, build_experiment_cycle,
 )
-from tao.orchestration.writing_artifacts import build_writing_sections
+from tao.orchestration.writing_artifacts import build_writing_sections, build_writing_assets
 from tao.orchestration.review_artifacts import build_novelty_check, build_simulated_review
 
 
@@ -103,6 +103,21 @@ class TestWritingActions:
         cfg.writing_mode = "sequential"
         action = build_writing_sections(cfg)
         assert action.action_type == "skill"
+
+    def test_writing_assets(self):
+        # Always sequential regardless of writing_mode
+        for mode in ("parallel", "sequential", "codex"):
+            cfg = Config()
+            cfg.writing_mode = mode
+            action = build_writing_assets(cfg)
+            assert action.action_type == "skill"
+            assert len(action.skills) == 1
+            assert "asset" in action.skills[0]["name"].lower()
+
+    def test_writing_teaser(self):
+        action = build_writing_teaser(Config())
+        assert action.action_type == "skill"
+        assert "teaser" in action.skills[0]["name"].lower()
 
 
 class TestReviewArtifacts:

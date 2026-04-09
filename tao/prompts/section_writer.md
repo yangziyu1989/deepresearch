@@ -19,6 +19,10 @@ Read the following workspace files:
 - `context/literature_survey.md` — Citations and related work.
 - `exp/results/` — Raw results for tables and in-text numbers.
 - `writing/sections/*.md` — Other sections already written (for cross-references and consistency).
+- `writing/tables/` — Pre-generated comparison tables. Use exact numbers from these tables.
+- `writing/figures/` — Pre-generated figures. Reference by id. Do not regenerate plots.
+- `writing/figures/figure_summary.json` — Figure index with captions and key takeaways.
+- `writing/figures/method_overview_description.md` — Method figure description (for method section).
 
 Your assigned section is provided as a parameter: `section` (e.g., "intro", "method", "experiments").
 

@@ -21,9 +21,12 @@ PAPER_SECTIONS = [
     ("conclusion", "Conclusion"),
 ]
 
+# TODO: Nothing reads CHECKPOINT_DIRS yet — wire up checkpoint save/restore
+# in the orchestrator for crash recovery (see TODOS.md).
 CHECKPOINT_DIRS = {
     "idea_debate": "idea",
     "result_debate": "idea/result_debate",
+    "writing_assets": ["writing/figures", "writing/tables"],
     "writing_sections": "writing/sections",
     "writing_integrate": "writing/critique",
 }
@@ -41,8 +44,10 @@ PIPELINE_STAGES = [
     "result_debate",
     "experiment_decision",
     "writing_outline",
+    "writing_assets",
     "writing_sections",
     "writing_integrate",
+    "writing_teaser",
     "writing_final_review",
     "writing_latex",
     "review",
@@ -52,6 +57,6 @@ PIPELINE_STAGES = [
 ]
 
 SYNC_SKIP_STAGES = {
-    "writing_outline", "writing_sections", "writing_integrate",
-    "writing_final_review", "init", "quality_gate", "done", "lark_sync",
+    "writing_outline", "writing_assets", "writing_sections", "writing_integrate",
+    "writing_final_review", "writing_teaser", "init", "quality_gate", "done", "lark_sync",
 }

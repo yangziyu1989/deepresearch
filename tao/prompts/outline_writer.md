@@ -51,10 +51,25 @@ Write the outline to:
 
 - `writing/paper_outline.md` — Human-readable outline with annotations.
 
+## Pre-Writing Checklist (verify before outlining)
+
+Before generating the outline, verify all preconditions. If any item fails, note it in the outline output and flag it for the orchestrator.
+
+- **Venue & template:** Confirm target venue (NeurIPS/ICML/ICLR/ACL) and ensure `.sty` file is available.
+- **Method figure:** Plan method overview figure (PaperBanana or TikZ, not basic matplotlib).
+- **Result figures:** Plan 4-6 result figures (quantitative plots for key findings).
+- **Teaser figure:** Note that a teaser (Figure 1) will be auto-generated after writing (combines method + results).
+- **Citation target:** Target 30-40+ citations distributed across all sections.
+- **Method section plan:** 2+ pages, formal notation, equations, algorithm box.
+- **Related work scope:** Broad subsections, each with 5-10+ citations.
+- **Teaser placement:** Teaser figure after abstract, NOT above title.
+
 ## Quality Standards
 
 - Follow standard ML paper structure: Introduction, Related Work, Method, Experiments, Discussion, Conclusion.
 - Every section must have 3-5 concrete key points, not vague directives.
-- Plan at least one figure showing the main method and one table comparing against baselines.
+- Plan at least: one method figure (architecture/pipeline), one comparison table (vs baselines), one experimental figure (ablation or main result plot), and note that a teaser (Figure 1) will be auto-generated after writing.
+- For each figure, specify: id, type (method/experimental/qualitative), description, data source path.
+- For each table, specify: id, description, data source path, columns, metrics with direction (↑/↓).
 - Total target word count should be 6000-8000 words (typical ML conference paper).
 - Ensure the contribution list in the introduction matches what the experiments actually demonstrate.

@@ -35,9 +35,11 @@ def test_agent_task():
 def test_pipeline_stages_order():
     assert PIPELINE_STAGES[0] == "init"
     assert PIPELINE_STAGES[-1] == "done"
-    assert len(PIPELINE_STAGES) == 18
+    assert len(PIPELINE_STAGES) == 20
     # Key stages exist
     assert "literature_search" in PIPELINE_STAGES
+    assert "writing_assets" in PIPELINE_STAGES
+    assert "writing_teaser" in PIPELINE_STAGES
     assert "idea_debate" in PIPELINE_STAGES
     assert "experiment_cycle" in PIPELINE_STAGES
     assert "writing_latex" in PIPELINE_STAGES
@@ -58,6 +60,7 @@ def test_paper_sections():
 def test_checkpoint_dirs():
     assert "idea_debate" in CHECKPOINT_DIRS
     assert CHECKPOINT_DIRS["writing_sections"] == "writing/sections"
+    assert CHECKPOINT_DIRS["writing_assets"] == ["writing/figures", "writing/tables"]
 
 
 def test_sync_skip_stages():

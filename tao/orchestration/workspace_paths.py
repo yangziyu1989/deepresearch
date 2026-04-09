@@ -21,7 +21,7 @@ def ensure_workspace_dirs(active_root: Path) -> None:
         "idea", "idea/perspectives", "idea/debate", "idea/result_debate",
         "plan",
         "exp", "exp/code", "exp/results", "exp/results/pilots", "exp/results/full", "exp/logs",
-        "writing", "writing/sections", "writing/critique", "writing/figures", "writing/latex",
+        "writing", "writing/sections", "writing/critique", "writing/figures", "writing/tables", "writing/latex",
         "context",
         "supervisor",
         "reflection",

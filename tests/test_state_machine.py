@@ -142,6 +142,20 @@ class TestWritingRevision:
         assert next_stage == "writing_latex"
 
 
+class TestNewWritingStages:
+    def test_writing_outline_to_assets(self, tmp_path):
+        sm = _make_sm(tmp_path)
+        assert sm.natural_next_stage("writing_outline") == "writing_assets"
+
+    def test_writing_assets_to_sections(self, tmp_path):
+        sm = _make_sm(tmp_path)
+        assert sm.natural_next_stage("writing_assets") == "writing_sections"
+
+    def test_writing_teaser_to_final_review(self, tmp_path):
+        sm = _make_sm(tmp_path)
+        assert sm.natural_next_stage("writing_teaser") == "writing_final_review"
+
+
 class TestQualityGate:
     def test_quality_gate_done_high_score(self, tmp_path):
         sm = _make_sm(tmp_path, max_iterations=10)

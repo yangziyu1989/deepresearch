@@ -37,8 +37,10 @@ class Lifecycle:
             "result_debate": self._action_result_debate,
             "experiment_decision": self._action_experiment_decision,
             "writing_outline": self._action_writing_outline,
+            "writing_assets": self._action_writing_assets,
             "writing_sections": self._action_writing_sections,
             "writing_integrate": self._action_writing_integrate,
+            "writing_teaser": self._action_writing_teaser,
             "writing_final_review": self._action_writing_final_review,
             "writing_latex": self._action_writing_latex,
             "review": self._action_review,
@@ -190,6 +192,10 @@ class Lifecycle:
             estimated_minutes=5,
         )
 
+    def _action_writing_assets(self) -> Action:
+        from tao.orchestration.writing_artifacts import build_writing_assets
+        return build_writing_assets(self._cfg)
+
     def _action_writing_sections(self) -> Action:
         if self._cfg.writing_mode == "parallel":
             from tao.orchestration.constants import PAPER_SECTIONS
@@ -232,6 +238,10 @@ class Lifecycle:
             description="Final paper quality review",
             estimated_minutes=5,
         )
+
+    def _action_writing_teaser(self) -> Action:
+        from tao.orchestration.simple_actions import build_writing_teaser
+        return build_writing_teaser(self._cfg)
 
     def _action_writing_latex(self) -> Action:
         return Action(

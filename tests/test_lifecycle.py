@@ -50,6 +50,22 @@ class TestLifecycle:
         action = lc.get_next_action()
         assert action.action_type == "skill"
 
+    def test_get_next_action_writing_assets(self, tmp_path):
+        # Always sequential regardless of writing_mode
+        for mode in ("parallel", "sequential"):
+            lc = _make_lifecycle(tmp_path, writing_mode=mode)
+            lc._ws.update_stage("writing_assets")
+            action = lc.get_next_action()
+            assert action.action_type == "skill"
+            assert len(action.skills) == 1
+
+    def test_get_next_action_writing_teaser(self, tmp_path):
+        lc = _make_lifecycle(tmp_path)
+        lc._ws.update_stage("writing_teaser")
+        action = lc.get_next_action()
+        assert action.action_type == "skill"
+        assert "teaser" in action.skills[0]["name"].lower()
+
     def test_get_next_action_done(self, tmp_path):
         lc = _make_lifecycle(tmp_path)
         lc._ws.update_stage("done")
