@@ -17,7 +17,7 @@ tao/                        # Main package
 │   └── runpod_backend.py   # RunPod API + SSH (pod lifecycle, remote exec, file transfer)
 ├── orchestration/          # Pipeline orchestration
 │   ├── models.py           # Action, AgentTask dataclasses
-│   ├── constants.py        # PIPELINE_STAGES (18 stages)
+│   ├── constants.py        # PIPELINE_STAGES (20 stages)
 │   ├── state_machine.py    # Transitions, pivots, quality gates
 │   ├── lifecycle.py        # Action generation per stage
 │   ├── action_dispatcher.py # Action -> execution script
@@ -55,7 +55,7 @@ tao/                        # Main package
 ├── evolution.py            # Cross-project self-improvement
 ├── runtime_assets.py       # .claude/ setup, CLAUDE.md generation
 ├── latex_pipeline.py       # Markdown -> LaTeX -> PDF
-├── prompts/                # 30 agent prompt templates
+├── prompts/                # 34 agent prompt templates
 ├── dashboard/server.py     # Flask dashboard
 ├── webui/                  # WebUI backend (Flask + WebSocket)
 └── rebuttal/               # Rebuttal pipeline (7-stage)
@@ -91,13 +91,14 @@ tao serve --port 3000       # API-only server
 python -m tao.demo
 ```
 
-## Pipeline (18 stages)
+## Pipeline (20 stages)
 
 init -> literature_search -> idea_debate -> planning -> pilot_experiments
 -> idea_validation_decision -> experiment_cycle -> result_debate
--> experiment_decision -> writing_outline -> writing_sections
--> writing_integrate -> writing_final_review -> writing_latex
--> review -> reflection -> quality_gate -> done
+-> experiment_decision -> writing_outline -> writing_assets
+-> writing_sections -> writing_integrate -> writing_final_review
+-> writing_teaser -> writing_latex -> review -> reflection
+-> quality_gate -> done
 
 ## Key Patterns
 
@@ -162,3 +163,23 @@ Edit `config.example.yaml` and copy to `config.yaml`. Key settings:
 - **Prefer GPU-light methods** — few-step fine-tune, LoRA, small models over heavy training runs
 - **State machine** — check test_state_machine.py before modifying transitions
 - **RunPod image pull** — without `template_id`, image pulls take 10+ min even for the same image; always set `template_id` in config
+
+## Skill routing
+
+When the user's request matches an available skill, ALWAYS invoke it using the Skill
+tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
+The skill has specialized workflows that produce better results than ad-hoc answers.
+
+Key routing rules:
+- Product ideas, "is this worth building", brainstorming → invoke office-hours
+- Bugs, errors, "why is this broken", 500 errors → invoke investigate
+- Ship, deploy, push, create PR → invoke ship
+- QA, test the site, find bugs → invoke qa
+- Code review, check my diff → invoke review
+- Update docs after shipping → invoke document-release
+- Weekly retro → invoke retro
+- Design system, brand → invoke design-consultation
+- Visual audit, design polish → invoke design-review
+- Architecture review → invoke plan-eng-review
+- Save progress, checkpoint, resume → invoke checkpoint
+- Code quality, health check → invoke health
