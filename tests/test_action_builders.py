@@ -82,11 +82,13 @@ class TestExperimentActions:
     def test_pilot(self):
         action = build_pilot_experiments(Config())
         assert action.action_type == "bash"
+        assert "experiment-run" in action.bash_command
         assert action.experiment_monitor["type"] == "pilot"
 
     def test_experiment_cycle(self):
         action = build_experiment_cycle(Config())
-        assert action.action_type == "experiment_wait"
+        assert action.action_type == "bash"
+        assert "experiment-run" in action.bash_command
         assert action.experiment_monitor["type"] == "full"
 
 

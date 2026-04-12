@@ -330,6 +330,31 @@ def test_run_remote_timeout():
     assert "timed out" in result["stderr"]
 
 
+def test_upload_code_falls_back_to_sftp():
+    cfg = Config()
+    backend = RunPodBackend(cfg)
+    ssh_info = {"host": "1.2.3.4", "port": 17445, "username": "root", "ssh_key": None, "mode": "full"}
+    failed_rsync = MagicMock(returncode=1)
+    with patch.object(backend, "get_pod_ssh_info", return_value=ssh_info), \
+         patch.object(backend, "run_remote", return_value={"returncode": 0}), \
+         patch.object(backend, "_upload_via_sftp", return_value=True) as sftp_upload, \
+         patch("tao.compute.runpod_backend.subprocess.run", return_value=failed_rsync):
+        assert backend.upload_code("pod-1", "/tmp/local", "/tmp/remote") is True
+    sftp_upload.assert_called_once_with(ssh_info, "/tmp/local", "/tmp/remote")
+
+
+def test_download_results_falls_back_to_sftp():
+    cfg = Config()
+    backend = RunPodBackend(cfg)
+    ssh_info = {"host": "1.2.3.4", "port": 17445, "username": "root", "ssh_key": None, "mode": "full"}
+    failed_rsync = MagicMock(returncode=1)
+    with patch.object(backend, "get_pod_ssh_info", return_value=ssh_info), \
+         patch.object(backend, "_download_via_sftp", return_value=True) as sftp_download, \
+         patch("tao.compute.runpod_backend.subprocess.run", return_value=failed_rsync):
+        assert backend.download_results("pod-1", "/tmp/remote", "/tmp/local") is True
+    sftp_download.assert_called_once_with(ssh_info, "/tmp/remote", "/tmp/local")
+
+
 # --- _ssh_cmd_prefix ---
 
 def test_ssh_cmd_prefix_full():

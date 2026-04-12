@@ -50,6 +50,17 @@ def main():
                 table.add_row(key, str(val))
         console.print(table)
 
+    @app.command(name="experiment-run")
+    def experiment_run(
+        workspace: str = typer.Argument(".", help="Workspace path"),
+        phase: str = typer.Argument(..., help="Experiment phase: pilot or full"),
+        keep_pod: bool = typer.Option(False, help="Keep the RunPod pod alive after completion"),
+    ):
+        """Launch an experiment phase on RunPod."""
+        from tao.orchestrate import cli_experiment_run
+        result = json.loads(cli_experiment_run(workspace, phase, keep_pod=keep_pod))
+        console.print_json(json.dumps(result, indent=2))
+
     @app.command()
     def dispatch(workspace: str = typer.Argument(".", help="Workspace path")):
         """Dispatch next batch of experiment tasks."""
@@ -175,7 +186,7 @@ def _fallback_main():
     args = sys.argv[1:]
     if not args or args[0] in ("--help", "-h"):
         print("Tao Research System CLI")
-        print("Commands: status, init, cli-record, experiment-status, dispatch, evolve, self-heal-scan, latex-compile, dashboard")
+        print("Commands: status, init, cli-record, experiment-status, experiment-run, dispatch, evolve, self-heal-scan, latex-compile, dashboard")
         print("Install typer and rich for full CLI: pip install typer rich")
         return
 
@@ -199,6 +210,11 @@ def _fallback_main():
     elif cmd == "experiment-status":
         from tao.gpu_scheduler import get_progress_summary
         print(json.dumps(get_progress_summary(workspace), indent=2))
+    elif cmd == "experiment-run":
+        from tao.orchestrate import cli_experiment_run
+        phase = args[2] if len(args) > 2 else "pilot"
+        keep_pod = "--keep-pod" in args[3:]
+        print(cli_experiment_run(workspace, phase, keep_pod=keep_pod))
     else:
         print(f"Unknown command: {cmd}")
         sys.exit(1)

@@ -4,6 +4,9 @@ import os
 import subprocess
 import json
 import time
+import io
+import stat
+import tarfile
 from functools import lru_cache
 from pathlib import Path
 from types import ModuleType
@@ -279,6 +282,9 @@ class RunPodBackend(ComputeBackend):
             if ssh_info["mode"] == "basic":
                 # Basic SSH doesn't support rsync; fall back to tar+ssh
                 return self._upload_via_tar(ssh_info, local_path, remote_path)
+            mkdir_cmd = self.run_remote(pod_id, f"mkdir -p {remote_path}", timeout_sec=60)
+            if mkdir_cmd.get("returncode") != 0:
+                return False
             ssh_e = " ".join(self._ssh_cmd_prefix(ssh_info))
             cmd = [
                 "rsync", "-avz", "--progress",
@@ -287,28 +293,111 @@ class RunPodBackend(ComputeBackend):
                 f"{self._ssh_target(ssh_info)}:{remote_path}/",
             ]
             result = subprocess.run(cmd, capture_output=True, timeout=300)
-            return result.returncode == 0
+            if result.returncode == 0:
+                return True
+            return self._upload_via_sftp(ssh_info, local_path, remote_path)
         except Exception:
             return False
 
     def _upload_via_tar(self, ssh_info: dict, local_path: str, remote_path: str) -> bool:
-        """Upload via tar pipe over basic SSH (no rsync support)."""
+        """Upload via tar stream over SSH without preserving local macOS metadata."""
         try:
             ssh_prefix = self._ssh_cmd_prefix(ssh_info)
-            tar_cmd = ["tar", "-czf", "-", "-C", local_path, "."]
+            archive = self._build_tar_archive(local_path)
             ssh_cmd = ssh_prefix + [
                 self._ssh_target(ssh_info),
-                f"mkdir -p {remote_path} && tar -xzf - -C {remote_path}",
+                f"mkdir -p {remote_path} && tar -xzf - --no-same-owner --no-same-permissions -C {remote_path}",
             ]
-            tar_proc = subprocess.Popen(tar_cmd, stdout=subprocess.PIPE)
-            ssh_proc = subprocess.Popen(
-                ssh_cmd, stdin=tar_proc.stdout, capture_output=True,
-            )
-            tar_proc.stdout.close()
-            ssh_proc.communicate(timeout=300)
-            return ssh_proc.returncode == 0
+            result = subprocess.run(ssh_cmd, input=archive, capture_output=True, timeout=300)
+            return result.returncode == 0
         except Exception:
             return False
+
+    def _build_tar_archive(self, local_path: str) -> bytes:
+        """Create a gzip tar archive in memory with normalized metadata."""
+        root = Path(local_path).resolve()
+        stream = io.BytesIO()
+
+        def _sanitize(tarinfo: tarfile.TarInfo) -> tarfile.TarInfo | None:
+            name = Path(tarinfo.name).name
+            if name.startswith("._") or name == ".DS_Store":
+                return None
+            tarinfo.uid = 0
+            tarinfo.gid = 0
+            tarinfo.uname = ""
+            tarinfo.gname = ""
+            tarinfo.pax_headers = {}
+            return tarinfo
+
+        with tarfile.open(fileobj=stream, mode="w:gz") as archive:
+            for child in root.iterdir():
+                archive.add(child, arcname=child.name, recursive=True, filter=_sanitize)
+        return stream.getvalue()
+
+    def _upload_via_sftp(self, ssh_info: dict, local_path: str, remote_path: str) -> bool:
+        """Upload a directory tree via SFTP for full-SSH pods."""
+        try:
+            import paramiko
+            client = self._open_paramiko_client(ssh_info, paramiko)
+            try:
+                sftp = client.open_sftp()
+                try:
+                    self._sftp_mkdir_p(sftp, remote_path)
+                    root = Path(local_path).resolve()
+                    for child in root.iterdir():
+                        self._sftp_upload_path(sftp, child, f"{remote_path}/{child.name}")
+                    return True
+                finally:
+                    sftp.close()
+            finally:
+                client.close()
+        except Exception:
+            return False
+
+    def _open_paramiko_client(self, ssh_info: dict, paramiko_module: ModuleType | None = None):
+        """Create a connected Paramiko SSH client."""
+        paramiko_mod = paramiko_module
+        if paramiko_mod is None:
+            import paramiko as paramiko_mod
+
+        client = paramiko_mod.SSHClient()
+        client.set_missing_host_key_policy(paramiko_mod.AutoAddPolicy())
+        connect_kwargs = {
+            "hostname": ssh_info["host"],
+            "port": ssh_info["port"],
+            "username": ssh_info["username"],
+            "look_for_keys": False,
+            "allow_agent": False,
+            "timeout": 60,
+        }
+        if ssh_info.get("ssh_key"):
+            connect_kwargs["key_filename"] = ssh_info["ssh_key"]
+        client.connect(**connect_kwargs)
+        return client
+
+    def _sftp_mkdir_p(self, sftp, remote_dir: str) -> None:
+        """Create a remote directory tree if it does not already exist."""
+        parts = Path(remote_dir).parts
+        current = ""
+        for part in parts:
+            if not part:
+                continue
+            current = f"{current}/{part}" if current else ("/" if part == "/" else part)
+            if current == "/":
+                continue
+            try:
+                sftp.stat(current)
+            except OSError:
+                sftp.mkdir(current)
+
+    def _sftp_upload_path(self, sftp, local_path: Path, remote_path: str) -> None:
+        """Recursively upload a local path via SFTP."""
+        if local_path.is_dir():
+            self._sftp_mkdir_p(sftp, remote_path)
+            for child in local_path.iterdir():
+                self._sftp_upload_path(sftp, child, f"{remote_path}/{child.name}")
+            return
+        sftp.put(str(local_path), remote_path)
 
     def download_results(self, pod_id: str, remote_path: str, local_path: str) -> bool:
         """Download results from pod via rsync."""
@@ -324,7 +413,9 @@ class RunPodBackend(ComputeBackend):
                 f"{local_path}/",
             ]
             result = subprocess.run(cmd, capture_output=True, timeout=600)
-            return result.returncode == 0
+            if result.returncode == 0:
+                return True
+            return self._download_via_sftp(ssh_info, remote_path, local_path)
         except Exception:
             return False
 
@@ -337,14 +428,48 @@ class RunPodBackend(ComputeBackend):
                 f"tar -czf - -C {remote_path} .",
             ]
             os.makedirs(local_path, exist_ok=True)
-            tar_cmd = ["tar", "-xzf", "-", "-C", local_path]
-            ssh_proc = subprocess.Popen(ssh_cmd, stdout=subprocess.PIPE)
-            tar_proc = subprocess.Popen(tar_cmd, stdin=ssh_proc.stdout, capture_output=True)
-            ssh_proc.stdout.close()
-            tar_proc.communicate(timeout=600)
-            return tar_proc.returncode == 0
+            result = subprocess.run(ssh_cmd, capture_output=True, timeout=600)
+            if result.returncode != 0:
+                return False
+            with tarfile.open(fileobj=io.BytesIO(result.stdout), mode="r:gz") as archive:
+                archive.extractall(path=local_path, filter="data")
+            return True
         except Exception:
             return False
+
+    def _download_via_sftp(self, ssh_info: dict, remote_path: str, local_path: str) -> bool:
+        """Download a directory tree via SFTP for full-SSH pods."""
+        try:
+            import paramiko
+            client = self._open_paramiko_client(ssh_info, paramiko)
+            try:
+                sftp = client.open_sftp()
+                try:
+                    destination = Path(local_path).resolve()
+                    destination.mkdir(parents=True, exist_ok=True)
+                    self._sftp_download_path(sftp, remote_path, destination)
+                    return True
+                finally:
+                    sftp.close()
+            finally:
+                client.close()
+        except Exception:
+            return False
+
+    def _sftp_download_path(self, sftp, remote_path: str, local_path: Path) -> None:
+        """Recursively download a remote path via SFTP."""
+        attrs = sftp.stat(remote_path)
+        is_dir = hasattr(attrs, "st_mode") and stat.S_ISDIR(attrs.st_mode)
+        if is_dir:
+            local_path.mkdir(parents=True, exist_ok=True)
+            for entry in sftp.listdir_attr(remote_path):
+                self._sftp_download_path(
+                    sftp,
+                    f"{remote_path.rstrip('/')}/{entry.filename}",
+                    local_path / entry.filename,
+                )
+            return
+        sftp.get(remote_path, str(local_path))
 
     def gpu_poll_script(
         self,

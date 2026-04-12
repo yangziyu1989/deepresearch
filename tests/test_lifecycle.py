@@ -162,3 +162,12 @@ class TestActionDispatcher:
         script = render_execution_script(action)
         assert "monitor" in script.lower()
         assert "120" in script
+
+    def test_render_bash_experiment_run(self):
+        action = Action(
+            action_type="bash",
+            bash_command="tao experiment-run . pilot",
+            stage="pilot_experiments",
+        )
+        script = render_execution_script(action)
+        assert "experiment-run" in script

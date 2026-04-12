@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from tao.orchestrate import (
     FarsOrchestrator, cli_next, cli_record, cli_status,
-    cli_evolve, cli_init, cli_init_from_spec, render_skill_prompt, _topic_to_name,
+    cli_evolve, cli_experiment_run, cli_init, cli_init_from_spec, render_skill_prompt, _topic_to_name,
 )
 from tao.config import Config
 
@@ -119,6 +119,21 @@ class TestCliInterface:
         assert "issues=2" in cli_evolve(f"{tmp_path} --show")
         assert cli_evolve(f"{tmp_path} --reset") == "Evolution history reset"
         assert not log_file.exists()
+
+    def test_cli_experiment_run(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(
+            "tao.orchestrate.run_experiment_phase",
+            lambda workspace_path, phase, keep_pod=False: {
+                "status": "success",
+                "workspace": str(workspace_path),
+                "phase": phase,
+                "keep_pod": keep_pod,
+            },
+        )
+        result = json.loads(cli_experiment_run(str(tmp_path), "pilot", keep_pod=True))
+        assert result["status"] == "success"
+        assert result["phase"] == "pilot"
+        assert result["keep_pod"] is True
 
 
 class TestHelpers:

@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 def build_pilot_experiments(config: "Config") -> Action:
     return Action(
         action_type="bash",
-        bash_command="tao experiment-status .",
+        bash_command="tao experiment-run . pilot",
         description="Launch pilot experiments on RunPod",
         estimated_minutes=max(1, config.pilot_timeout // 60),
         experiment_monitor={
@@ -24,8 +24,9 @@ def build_pilot_experiments(config: "Config") -> Action:
 
 def build_experiment_cycle(config: "Config") -> Action:
     return Action(
-        action_type="experiment_wait",
-        description="Run full experiments on RunPod and monitor completion",
+        action_type="bash",
+        bash_command="tao experiment-run . full",
+        description="Run full experiments on RunPod",
         estimated_minutes=max(1, config.experiment_timeout // 60),
         experiment_monitor={
             "type": "full",

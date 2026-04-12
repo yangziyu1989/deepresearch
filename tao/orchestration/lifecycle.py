@@ -4,6 +4,10 @@ from typing import TYPE_CHECKING
 
 from tao.orchestration.models import Action
 from tao.orchestration.state_machine import StateMachine
+from tao.orchestration.experiment_actions import (
+    build_experiment_cycle,
+    build_pilot_experiments,
+)
 from tao.event_logger import log_event
 
 if TYPE_CHECKING:
@@ -131,13 +135,7 @@ class Lifecycle:
         )
 
     def _action_pilot_experiments(self) -> Action:
-        return Action(
-            action_type="bash",
-            bash_command="tao experiment-status .",
-            description="Launch pilot experiments on RunPod",
-            estimated_minutes=30,
-            experiment_monitor={"type": "pilot", "timeout_minutes": self._cfg.pilot_timeout // 60},
-        )
+        return build_pilot_experiments(self._cfg)
 
     def _action_idea_validation(self) -> Action:
         return Action(
@@ -148,12 +146,7 @@ class Lifecycle:
         )
 
     def _action_experiment_cycle(self) -> Action:
-        return Action(
-            action_type="experiment_wait",
-            description="Run full experiments on RunPod and monitor",
-            estimated_minutes=120,
-            experiment_monitor={"type": "full", "timeout_minutes": self._cfg.experiment_timeout // 60},
-        )
+        return build_experiment_cycle(self._cfg)
 
     def _action_result_debate(self) -> Action:
         agents = [

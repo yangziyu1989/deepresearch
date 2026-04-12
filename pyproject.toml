@@ -16,6 +16,14 @@ dependencies = [
 
 [project.optional-dependencies]
 lark = ["lark-oapi>=1.0.0", "mistune>=3.0"]
+experiment = [
+    "accelerate>=0.34.0",
+    "bitsandbytes>=0.43.0",
+    "datasets>=2.20.0",
+    "peft>=0.13.0",
+    "sentencepiece>=0.2.0",
+    "transformers>=4.45.0",
+]
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",

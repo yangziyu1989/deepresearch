@@ -11,6 +11,7 @@ from tao.orchestration.lifecycle import Lifecycle
 from tao.orchestration.action_dispatcher import render_execution_script
 from tao.orchestration.prompt_loader import compile_prompt
 from tao.orchestration.state_machine import StateMachine
+from tao.experiment_launcher import run_experiment_phase
 
 
 class FarsOrchestrator:
@@ -97,6 +98,12 @@ def cli_status(workspace_path: str) -> str:
     """Get workspace status as JSON string."""
     orch = _load_orchestrator(workspace_path)
     return json.dumps(orch.get_status(), indent=2, ensure_ascii=False)
+
+
+def cli_experiment_run(workspace_path: str, phase: str, keep_pod: bool = False) -> str:
+    """Run a pilot or full experiment phase and return the launcher summary."""
+    result = run_experiment_phase(workspace_path, phase, keep_pod=keep_pod)
+    return json.dumps(result, indent=2, ensure_ascii=False)
 
 
 def cli_evolve(arguments: str = ".") -> str:
