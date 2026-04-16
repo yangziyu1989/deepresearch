@@ -117,8 +117,8 @@ init -> literature_search -> idea_debate -> planning -> pilot_experiments
 
 ```bash
 RUNPOD_API_KEY=...
-ANTHROPIC_API_KEY=...
 TAO_ROOT=...  # optional: override repo root detection
+# Note: No ANTHROPIC_API_KEY needed -- Claude Code handles its own auth
 ```
 
 ## SSH / RunPod

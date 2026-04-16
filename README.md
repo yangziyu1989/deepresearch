@@ -8,7 +8,7 @@ Built on **Claude Code** as the agent runtime and **RunPod** for GPU compute.
 
 ### Dual-Loop Design
 
-**Inner loop** (per-project): An 18-stage pipeline advances a single research project from topic to paper. A state machine governs transitions, with pivot and refine branches when quality gates fail.
+**Inner loop** (per-project): A 20-stage pipeline advances a single research project from topic to paper. A state machine governs transitions, with pivot and refine branches when quality gates fail.
 
 **Outer loop** (cross-project): After each project, a reflection + evolution pass extracts lessons learned and patches system prompts and configuration for future runs.
 
@@ -25,9 +25,10 @@ All experiments execute on RunPod GPU pods. The `RunPodBackend` manages the full
 ```
 init --> literature_search --> idea_debate --> planning --> pilot_experiments
   --> idea_validation_decision --> experiment_cycle --> result_debate
-  --> experiment_decision --> writing_outline --> writing_sections
-  --> writing_integrate --> writing_final_review --> writing_latex
-  --> review --> reflection --> quality_gate --> done
+  --> experiment_decision --> writing_outline --> writing_assets
+  --> writing_sections --> writing_integrate --> writing_teaser
+  --> writing_final_review --> writing_latex --> review
+  --> reflection --> quality_gate --> done
 ```
 
 | Stage | What happens |
@@ -42,9 +43,11 @@ init --> literature_search --> idea_debate --> planning --> pilot_experiments
 | `result_debate` | Multi-agent team analyzes results |
 | `experiment_decision` | Decide: more experiments or move to writing |
 | `writing_outline` | Generate paper outline |
+| `writing_assets` | Generate figures, tables, and method diagrams |
 | `writing_sections` | Write individual sections (parallel or sequential) |
-| `writing_integrate` | Merge sections, ensure coherence |
-| `writing_final_review` | Final quality pass |
+| `writing_integrate` | Cross-critique and merge sections |
+| `writing_teaser` | Generate abstract and teaser figure |
+| `writing_final_review` | Final quality pass (score 0-10) |
 | `writing_latex` | Compile Markdown to LaTeX to PDF |
 | `review` | Simulated peer review |
 | `reflection` | Extract lessons, score quality |
@@ -64,9 +67,8 @@ pip install -e ".[dev]"
 ### 2. Configure
 
 ```bash
-# Set API keys
+# Set RunPod API key (Claude Code handles its own auth -- no ANTHROPIC_API_KEY needed)
 export RUNPOD_API_KEY="your-runpod-key"
-export ANTHROPIC_API_KEY="your-anthropic-key"
 
 # Create project config
 cp config.example.yaml config.yaml
@@ -185,7 +187,7 @@ tao/                        # Main Python package
 ├── reflection.py           # Quality trajectory tracking
 ├── evolution.py            # Cross-project self-improvement
 ├── latex_pipeline.py       # Markdown -> LaTeX -> PDF
-├── prompts/                # 29 agent prompt templates
+├── prompts/                # 35 agent prompt templates
 ├── dashboard/              # Flask monitoring dashboard
 ├── webui/                  # WebUI backend (Flask + WebSocket)
 └── rebuttal/               # 7-stage rebuttal pipeline
