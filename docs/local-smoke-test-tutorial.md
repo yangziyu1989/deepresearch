@@ -130,6 +130,35 @@ Quick CLI sanity check:
 ./.venv/bin/python -m tao.cli --help
 ```
 
+## 8) Anti-mix environment self-check (recommended before running commands)
+
+Run these 3 commands in repo root:
+
+```bash
+which python
+python --version
+python -c "import sys; print(sys.executable)"
+```
+
+Pass criteria:
+- Python version is `3.11.x` (or above)
+- Interpreter path points to this project venv:
+	`/Users/zzyang/GitHub/deepresearch/.venv/bin/python`
+
+If not matched, use one of these fixes:
+
+```bash
+# Option A: activate venv for current shell
+source .venv/bin/activate
+
+# Option B: bypass shell state and run through uv
+uv run python -m tao.demo
+
+# Option C: always target the venv interpreter explicitly
+uv pip install --python .venv/bin/python -e ".[dev]"
+./.venv/bin/python -m tao.demo
+```
+
 ---
 
 ## Verified run on this machine (2026-04-16)
